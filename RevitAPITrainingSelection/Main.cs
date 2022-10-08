@@ -19,7 +19,7 @@ namespace RevitAPITrainingSelection
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
 
-            List<FamilyInstance> fInstances = new FilteredElementCollector(doc)
+            List<FamilyInstance> fInstances = new FilteredElementCollector(doc, doc.ActiveView.Id)
                 .OfCategory(BuiltInCategory.OST_Windows)
                 .WhereElementIsNotElementType()
                 .Cast<FamilyInstance>()
