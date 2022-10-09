@@ -18,12 +18,19 @@ namespace RevitAPITrainingSelection
             UIApplication uiapp = commandData.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
+            ElementCategoryFilter wallCategoryFilter = new ElementCategoryFilter(BuiltInCategory.OST_Walls);
+            ElementId levelId = null;
+            ElementLevelFilter level1Filter = new ElementLevelFilter(levelId);
+            //FilteredElementCollector collector = new FilteredElementCollector(doc);
+            //ICollection<Element> allWallsOnLevel1 = collector.OfClass(typeof(Wall)).WherePasses(level1Filter).ToElements();
 
-            var roofs = new FilteredElementCollector(doc)
-                .OfClass(typeof(RoofType))
-                .Cast<RoofType>()
+            LogicalAndFilter wallsFilter = new LogicalAndFilter(wallCategoryFilter, level1Filter);
+
+            var walls = new FilteredElementCollector(doc)
+                .WherePasses(wallsFilter)
+                .Cast<FamilyInstance>()
                 .ToList();
-            TaskDialog.Show("Roof info", roofs.Count.ToString());
+            TaskDialog.Show("Windows info", walls.Count.ToString());
             return Result.Succeeded;
         }
     }
