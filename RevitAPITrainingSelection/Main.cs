@@ -19,12 +19,11 @@ namespace RevitAPITrainingSelection
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
 
-            List<FamilyInstance> fInstances = new FilteredElementCollector(doc, doc.ActiveView.Id)
-                .OfCategory(BuiltInCategory.OST_Windows)
-                .WhereElementIsNotElementType()
-                .Cast<FamilyInstance>()
+            var roofs = new FilteredElementCollector(doc)
+                .OfClass(typeof(RoofType))
+                .Cast<RoofType>()
                 .ToList();
-            TaskDialog.Show("Windows count", fInstances.Count.ToString());
+            TaskDialog.Show("Roof info", roofs.Count.ToString());
             return Result.Succeeded;
         }
     }
