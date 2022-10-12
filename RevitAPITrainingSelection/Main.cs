@@ -18,19 +18,25 @@ namespace RevitAPITrainingSelection
             UIApplication uiapp = commandData.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
-            ElementCategoryFilter wallCategoryFilter = new ElementCategoryFilter(BuiltInCategory.OST_Walls);
-            ElementId levelId = null;
-            ElementLevelFilter level1Filter = new ElementLevelFilter(levelId);
-            //FilteredElementCollector collector = new FilteredElementCollector(doc);
-            //ICollection<Element> allWallsOnLevel1 = collector.OfClass(typeof(Wall)).WherePasses(level1Filter).ToElements();
 
-            LogicalAndFilter wallsFilter = new LogicalAndFilter(wallCategoryFilter, level1Filter);
+            IList<Reference> selectedRef = uidoc.Selection.PickObjects(ObjectType.Element, "Выберите элементы");
+            //var selectedRef = uidoc.Selection.PickObject(ObjectType.Element, "Выберите элемент");
+            double info = 0;
+            foreach (var element in selectedRef)
+            {
+                var selectedElement = doc.GetElement(element);
 
-            var walls = new FilteredElementCollector(doc)
-                .WherePasses(wallsFilter)
-                .Cast<FamilyInstance>()
-                .ToList();
-            TaskDialog.Show("Windows info", walls.Count.ToString());
+                if (selectedElement is Wall)
+                {
+                    Parameter volParameter = selectedElement.LookupParameter("Объем");
+                    if (volParameter.StorageType == StorageType.Double)
+                    {
+                        double summa = volParameter.AsDouble();
+                        info += summa;
+                    }
+                }
+            }
+            TaskDialog.Show("Объем", info.ToString());
             return Result.Succeeded;
         }
     }
