@@ -1,5 +1,7 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
+using Autodesk.Revit.DB.Plumbing;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using System;
@@ -20,23 +22,22 @@ namespace RevitAPITrainingSelection
             Document doc = uidoc.Document;
 
             IList<Reference> selectedRef = uidoc.Selection.PickObjects(ObjectType.Element, "Выберите элементы");
-            //var selectedRef = uidoc.Selection.PickObject(ObjectType.Element, "Выберите элемент");
             double info = 0;
             foreach (var element in selectedRef)
             {
                 var selectedElement = doc.GetElement(element);
 
-                if (selectedElement is Wall)
+                if (selectedElement is Pipe)
                 {
-                    Parameter volParameter = selectedElement.LookupParameter("Объем");
-                    if (volParameter.StorageType == StorageType.Double)
+                    Parameter lParameter = selectedElement.LookupParameter("Длина");
+                    if (lParameter.StorageType == StorageType.Double)
                     {
-                        double summa = volParameter.AsDouble();
+                        double summa = lParameter.AsDouble();
                         info += summa;
                     }
                 }
             }
-            TaskDialog.Show("Объем", info.ToString());
+            TaskDialog.Show("Длина", info.ToString());
             return Result.Succeeded;
         }
     }
