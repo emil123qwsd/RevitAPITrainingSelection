@@ -22,68 +22,72 @@ namespace RevitAPITrainingSelection
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
 
-            IList<Reference> selectedRef = uidoc.Selection.PickObjects(ObjectType.Element, "Выберите трубы");
+            Reference selectedRef = uidoc.Selection.PickObject(ObjectType.Element, "Выберите трубу");
 
-            double info = 0;
-           
+
             var categorySet = new CategorySet();
             categorySet.Insert(Category.GetCategory(doc, BuiltInCategory.OST_PipeCurves));
 
-            using (Transaction ts=new Transaction(doc, "Add parameter"))
+            using (Transaction ts = new Transaction(doc, "Add parameter"))
             {
                 ts.Start();
-                CreateSheredParameter(uiapp.Application, doc, "Длинна с запасом 10 процентов", categorySet, BuiltInParameterGroup.PG_TEXT, true);
+                CreateSheredParameter(uiapp.Application, doc, "Диаметр внешний/внутренний", categorySet, BuiltInParameterGroup.PG_TEXT, true);
                 ts.Commit();
             }
 
-            foreach (var element in selectedRef)
+            var selectedElement = doc.GetElement(selectedRef); 
+            if (selectedElement is Pipe)
             {
-                var selectedElement = doc.GetElement(element);
-
-                if (selectedElement is Pipe)
+                Parameter diameterPar1 = selectedElement.LookupParameter("Внутренний диаметр");
+                if (diameterPar1.StorageType == StorageType.Double)
                 {
-                    Parameter lParameter = selectedElement.LookupParameter("Длина");
-                    if (lParameter.StorageType == StorageType.Double)
+                    double d1 = diameterPar1.AsDouble();
+                    Parameter diameterPar2 = selectedElement.LookupParameter("Внешний диаметр");
+                    if (diameterPar2.StorageType == StorageType.Double)
                     {
-                        double lValue = lParameter.AsDouble();
-                        using (Transaction ts=new Transaction(doc, "Set Parameters"))
+                        double d2 = diameterPar2.AsDouble();
+                        string c1 = Convert.ToString(d1);
+                        string c2 = Convert.ToString(d2);
+                        using (Transaction ts = new Transaction(doc, "Set parameters"))
                         {
                             ts.Start();
-                            var familyInstance = (Pipe)selectedElement;
-                            Parameter parameter = familyInstance.LookupParameter("Длинна с запасом 10 процентов");
-                            parameter.Set(lValue * 1.1);
+                            var familyInstance = selectedElement as FamilyInstance;
+                            Parameter commentParameter = familyInstance.LookupParameter("Диаметр внешний/внутренний");
+                            commentParameter.Set("c1/c2");
+
+                            Parameter typeCommentsParameter = familyInstance.Symbol.LookupParameter("Диаметр внешний/внутренний");
+                            typeCommentsParameter.Set("c1 / c2");
                             ts.Commit();
                         }
-                        info += lValue;
                     }
                 }
-            }
-            TaskDialog.Show("Длина", info.ToString());
-            return Result.Succeeded;
-        }
 
-        private void CreateSheredParameter(Autodesk.Revit.ApplicationServices.Application application, Document doc, string v1, CategorySet categorySet, BuiltInParameterGroup pG_Text, bool isInstance)
+            }
+            return Result.Succeeded;
+
+        }
+        private void CreateSheredParameter(Autodesk.Revit.ApplicationServices.Application application, Document doc, string v1, CategorySet selectedElement, BuiltInParameterGroup PG_Text, bool isInstance)
         {
-                DefinitionFile definitionFile = application.OpenSharedParameterFile();
-                if (definitionFile == null)
-                {
-                    TaskDialog.Show("Ошибка", "Не найден файл общих параметров");
-                    return;
-                }
+            DefinitionFile definitionFile = application.OpenSharedParameterFile();
+            if (definitionFile == null)
+            {
+                TaskDialog.Show("Ошибка", "Не найден файл общих параметров");
+                return;
+            }
 
             Definition definition = definitionFile.Groups
                     .SelectMany(group => group.Definitions)
-                    .FirstOrDefault(def => def.Name.Equals("Длинна с запасом 10 процентов"));
-                if (definitionFile == null)
-                {
-                    TaskDialog.Show("Ошибка", "Не найден указанный параметров");
-                    return;
-                }
-            Binding binding = application.Create.NewTypeBinding(categorySet);
+                    .FirstOrDefault(def => def.Name.Equals("Диаметр внешний/внутренний"));
+            if (definitionFile == null)
+            {
+                TaskDialog.Show("Ошибка", "Не найден указанный параметров");
+                return;
+            }
+            Binding binding = application.Create.NewTypeBinding(selectedElement);
             if (isInstance)
-                binding = application.Create.NewInstanceBinding(categorySet);
+                binding = application.Create.NewInstanceBinding(selectedElement);
             BindingMap map = doc.ParameterBindings;
-            map.Insert(definition, binding, pG_Text);
+            map.Insert(definition, binding, PG_Text);
         }
     }
 }
