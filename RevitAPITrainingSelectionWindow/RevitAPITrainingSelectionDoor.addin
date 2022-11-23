@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+	<AddIn Type="Command">
+		<Assembly>"C:\Program Files\RevitAPITraining\RevitAPITrainingSelectionDoor.dll"</Assembly>
+		<AddInId>A5B6373B-84D4-4CBD-BCE8-6058A1B34265</AddInId>
+	    <FullClassName>RevitAPITrainingSelectionDoor.Main</FullClassName>
+	    <VendorId>ADSK</VendorId>
+	    <Text>SelectionWindow</Text>
+	</AddIn>
+</RevitAddIns>
