@@ -34,7 +34,7 @@ namespace RevitAPITrainingSelectionPipe
                 }
 
             }
-            TaskDialog.Show("Selection", $"Количество дверей: {elementList.Count}");
+            TaskDialog.Show("Selection", $"Количество труб: {elementList.Count}");
             return Result.Succeeded;
         }
     }
